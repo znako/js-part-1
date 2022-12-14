@@ -1,0 +1,21 @@
+{
+  "name": "js-part-1",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:ipetropolsky/js-part-1.git",
+  "author": "'Ivan Petropolsky' <i.petropolsky@hh.ru>",
+  "license": "MIT",
+  "scripts": {
+    "postinstall": "cp $(pwd)/githooks/* .git/hooks",
+    "lint-staged": "lint-staged",
+    "http-server": "http-server"
+  },
+  "devDependencies": {
+    "eslint": "8.29.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-plugin-prettier": "4.2.1",
+    "http-server": "14.1.1",
+    "lint-staged": "13.1.0",
+    "prettier": "2.8.0"
+  }
+}
