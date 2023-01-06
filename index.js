@@ -7,11 +7,19 @@ async function getData(url) {
         },
         redirect: 'follow',
     });
-    return response.json();
+    if (response.ok) {
+        return response.json();
+    }
+    throw response;
 }
 
 async function loadCountriesData() {
-    const countries = await getData('https://restcountries.com/v3.1/all?fields=name&fields=cca3&fields=area');
+    let countries = [];
+    try {
+        countries = await getData('https://restcountries.com/v3.1/all?fields=name&fields=cca3&fields=area');
+    } catch (error) {
+        throw error;
+    }
     return countries.reduce((result, country) => {
         result[country.cca3] = country;
         return result;
@@ -31,7 +39,13 @@ const output = document.getElementById('output');
     submit.disabled = true;
 
     output.textContent = 'Loading…';
-    const countriesData = await loadCountriesData();
+    let countriesData = {};
+    try {
+        countriesData = await loadCountriesData();
+    } catch (error) {
+        output.textContent = 'Something went wrong. Try to reset your compluter.';
+        return;
+    }
     output.textContent = '';
 
     // Заполняем список стран для подсказки в инпутах
