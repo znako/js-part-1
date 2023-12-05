@@ -100,7 +100,7 @@ API в некоторых случаях может вернуть ошибку,
 
 ### По шагам
 
-1) Сделайте _форк_ репозитория https://github.com/ipetropolsky/js-part-1
+1) Сделайте _форк_ репозитория [https://github.com/ipetropolsky/js-part-1](https://github.com/IlyaGorsky/js-part-1/)
 2) Склонируйте его к себе на машину, создайте ветку от master.
 3) Запустите `npm install` или `yarn`, чтобы установить зависимости.
 4) Запустите `npm run http-server` или `yarn http-server`, в консоли будет адрес, куда заходить.
