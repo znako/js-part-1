@@ -1,4 +1,4 @@
-import { getPathBetweenCountries, loadCountriesData } from '/async.js';
+import { fetchAllCountriesData, getPathBetweenCountries, loadCountriesData } from '/async.js';
 
 const form = document.getElementById('form');
 const fromCountry = document.getElementById('fromCountry');
@@ -38,6 +38,7 @@ const setLoading = (flag) => {
             countriesList.appendChild(option);
         });
 
+    await fetchAllCountriesData();
     setLoading(false);
     form.addEventListener('submit', async (event) => {
         event.preventDefault();

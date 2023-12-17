@@ -57,6 +57,19 @@ export async function loadCountriesData() {
 }
 // Мапа, в которой будем сохранять запросы, чтобы обращаться к ней, а не еще раз дергать ручку
 const alreadyUsedCountryData = new Map();
+
+// eslint-disable-next-line consistent-return
+export const fetchAllCountriesData = async () => {
+    try {
+        const allCountries = await getDataPromise('https://restcountries.com/v3.1/all?fields=borders,cca3,name');
+        allCountries.forEach((country) => {
+            alreadyUsedCountryData.set(country.cca3, country);
+        });
+    } catch (error) {
+        return Promise.reject(error);
+    }
+};
+
 // Эту функцию будем вызывать каждый раз когда захотим получить данные. Она нам вернет либо данные из мапы, если они там есть, либо дернет ручку
 const getData = async (requestType, value) => {
     if (requestType === requestTypes.BY_KEY) {
@@ -68,50 +81,19 @@ const getData = async (requestType, value) => {
             };
         }
 
-        try {
-            const response = await getDataPromise(
-                `https://restcountries.com/v3.1/alpha/${value}?fields=borders,name,cca3`
-            );
-            alreadyUsedCountryData.set(value, response);
-            return {
-                data: response,
-                wasRequest: true,
-            };
-        } catch (error) {
-            const { message, status } = error;
-            if (status === 404) {
-                return Promise.reject({ message: `Error: Can not find country with ${value} cca3 code` });
-            }
-
-            return Promise.reject({ message });
-        }
-    } else {
-        const country = [...alreadyUsedCountryData.values()].find((country) => country.name.common === value);
-        if (country) {
-            return {
-                // Пришлось скастовать потому что find может вернуть undefined, но для этого сделал if, поэтому undefined быть не может
-                data: country,
-                wasRequest: false,
-            };
-        }
-        try {
-            const response = await getDataPromise(
-                `https://restcountries.com/v3.1/name/${value}?fullText=true&fields=borders,name,cca3`
-            );
-            alreadyUsedCountryData.set(response[0].cca3, response[0]);
-            return {
-                data: response[0],
-                wasRequest: true,
-            };
-        } catch (error) {
-            const { message, status } = error;
-            if (status === 404) {
-                return Promise.reject({ message: `Error: Can not find country with name ${value}` });
-            }
-
-            return Promise.reject({ message });
-        }
+        return Promise.reject({ message: `Error: Can not find country with ${value} cca3 code` });
     }
+
+    const country = [...alreadyUsedCountryData.values()].find((country) => country.name.common === value);
+    if (country) {
+        return {
+            // Пришлось скастовать потому что find может вернуть undefined, но для этого сделал if, поэтому undefined быть не может
+            data: country,
+            wasRequest: false,
+        };
+    }
+
+    return Promise.reject({ message: `Error: Can not find country with name ${value}` });
 };
 // Основная функция, которую мы экспортируем наружу
 export const getPathBetweenCountries = async function (fromCountryName, toCountryName) {
@@ -119,7 +101,7 @@ export const getPathBetweenCountries = async function (fromCountryName, toCountr
         return Promise.reject({ message: 'Error: You have not entered a country' });
     }
     let fromCountryKey;
-    let requestsNumber = 0;
+    let requestsNumber = 1; // кол-во запросов не должно меняться
     let bordersFromCountry;
     let bordersToCountry;
     // Делаем запросы для стран из инпута, пытаемся на этом шаге сделать выводы и получить результат

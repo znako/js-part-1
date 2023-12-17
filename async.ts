@@ -60,6 +60,17 @@ export async function loadCountriesData() {
 // Мапа, в которой будем сохранять запросы, чтобы обращаться к ней, а не еще раз дергать ручку
 const alreadyUsedCountryData: Map<string, Omit<countryType, 'area'>> = new Map()
 
+export const fetchAllCountriesData = async () => {
+    try {
+        const allCountries: Array<countryType> = await getDataPromise('https://restcountries.com/v3.1/all?fields=borders,cca3,name')
+        allCountries.forEach(country => {
+            alreadyUsedCountryData.set(country.cca3, country)
+        })
+    } catch (error) {
+        return Promise.reject(error)
+    }
+}
+
 // Эту функцию будем вызывать каждый раз когда захотим получить данные. Она нам вернет либо данные из мапы, если они там есть, либо дернет ручку
 const getData = async (requestType: requestTypes, value: string): Promise<{data: countryType, wasRequest: boolean}> => {
     if (requestType === requestTypes.BY_KEY) {
@@ -71,22 +82,7 @@ const getData = async (requestType: requestTypes, value: string): Promise<{data:
             }
         }
         else {
-            try {
-                const response: countryType = await getDataPromise(`https://restcountries.com/v3.1/alpha/${value}?fields=borders,name,cca3`)
-                alreadyUsedCountryData.set(value, response)
-                return {
-                    data: response,
-                    wasRequest: true
-                }
-            } catch (error) {
-                const {message, status} = error as ErrorType
-                if (status === 404) {
-                    return Promise.reject({message: `Error: Can not find country with ${value} cca3 code`})
-                }
-                else {
-                    return Promise.reject({message})
-                }
-            }
+            return Promise.reject({message: `Error: Can not find country with ${value} cca3 code`})
         }
     }
     else {
@@ -98,21 +94,8 @@ const getData = async (requestType: requestTypes, value: string): Promise<{data:
                 wasRequest: false
             }
         }
-        try {
-            const response: Array<countryType> = await getDataPromise(`https://restcountries.com/v3.1/name/${value}?fullText=true&fields=borders,name,cca3`)
-            alreadyUsedCountryData.set(response[0].cca3, response[0])
-            return {
-                data: response[0],
-                wasRequest: true
-            }
-        } catch (error) {
-            const {message, status} = error as ErrorType
-            if (status === 404) {
-                return Promise.reject({message: `Error: Can not find country with name ${value}`})
-            }
-            else {
-                return Promise.reject({message})
-            }
+        else {
+            return Promise.reject({message: `Error: Can not find country with name ${value}`})
         }
     }
 }
@@ -124,7 +107,7 @@ export const getPathBetweenCountries = async function (fromCountryName: string, 
     }
 
     let fromCountryKey: string
-    let requestsNumber = 0;
+    let requestsNumber = 1; // кол-во запросов не должно меняться
     let bordersFromCountry: Array<string>;
     let bordersToCountry: Array<string>;
 

@@ -1,4 +1,4 @@
-import { getPathBetweenCountries, loadCountriesData } from "./async";
+import { fetchAllCountriesData, getPathBetweenCountries, loadCountriesData } from "./async";
 import { countriesDataType, ErrorType } from "./types";
 
 const form = document.getElementById('form') as HTMLFormElement;
@@ -39,6 +39,7 @@ const setLoading = (flag: boolean) => {
             countriesList.appendChild(option);
         });
         
+    await fetchAllCountriesData()
     setLoading(false);
 
     form.addEventListener('submit', async (event) => {
